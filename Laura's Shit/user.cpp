@@ -225,3 +225,65 @@ void User::renew(std::string userID, std::string itemInfo) {
    };
    return;
 };
+
+
+void User::checkHistory(std::string userID) {
+   std::ifstream instream;
+   std::ostringstream convert;
+   std::string fileContents;
+   std::string buffer = "|";
+   std::string title;
+   std::string date;
+   int IDLoc;
+   int beginPipe;
+   int endPipe;
+   int hits = 0;
+   int resultCounter = 1;
+   int index1 = 0;
+   int index2;
+   std::string output = "";
+   
+   instream.open("history.txt");
+   if (instream.fail()) {
+      std::cout << "history.txt did not open -_-";
+      return;
+   };
+   
+   std::getline(instream, fileContents);
+   IDLoc = fileContents.find(userID);
+   while (IDLoc > 0) {
+      beginPipe = fileContents.rfind("|", IDLoc);
+      endPipe = fileContents.find("|", IDLoc);
+      buffer += fileContents.substr(beginPipe + 1, endPipe - beginPipe);
+      hits++;
+      IDLoc = fileContents.find(userID, IDLoc + 1);
+   };
+   
+   
+   if (hits == 0) {
+      std::cout << "No items checked out...\n";
+      return;
+   };
+   
+   std::cout << "\nI was able to find " << hits << " results matching your criteria.\n";
+   index1 = buffer.find(":");
+   while (index1 > 0) {
+      index2 = buffer.find(":", index1 + 1);
+      title = buffer.substr(index1 + 1, index2 - index1 - 1);
+      index1 = index2;
+      index2 = buffer.find("|", index1 + 1);
+      date = buffer.substr(index1 + 1, index2 - index1 - 1);
+      index1 = buffer.find(":", index2);
+      // index2 = buffer.find("|", index1 + 1);
+      // status = buffer.substr(index1 + 1, index2 - index1 - 1);
+      output += "\nResult ";
+      convert.str("");
+      convert.clear();
+      convert << resultCounter;
+      output += convert.str();
+      output += ":\nTitle: " + title + "\nDue Date: " + date;
+      resultCounter++;
+   };
+   std::cout << output;
+   return;
+};

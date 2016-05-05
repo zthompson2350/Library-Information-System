@@ -15,6 +15,7 @@ class User {
                 void setStatus(std::string userID);
                 Mode getMode();
 		void search(std::string userID);
+		void checkHistory(std::string userID);
         private:
                 bool verifyUser(std::string userID);
         protected:

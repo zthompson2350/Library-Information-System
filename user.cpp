@@ -378,74 +378,6 @@ void User::renew(std::string userID, std::string itemInfo) {
 	return;
 };
 
-void User::checkOut(std::string userID, std::string itemInfo) {
-        std::string date;
-        time_t now = time(0);
-        tm *newDate = localtime(&now);
-        int beginTitle;
-        int endTitle;
-        int IDLoc;
-        int dateLoc;
-        int month;
-        int day;
-        std::ifstream instream;
-        std::string fileContents;
-        std::ofstream outstream;
-        std::string entry;
-        bool found = false;
-
-        if (userID[0] != '1') {
-                std::cout << "Please enter the Patron's User ID: ";
-                std::cin >> userID;
-        };
-        instream.open("history.txt");
-        if (instream.fail()) {
-                std::cout << "Oh no...history.txt failed to open";
-                return;
-        };
-        std::getline(instream, fileContents);
-        instream.close();
-
-        IDLoc = fileContents.find(userID);
-
-
-	return;
-}
-
-void User::checkIn(std::string userID, std::string itemInfo) {
-        std::string date;
-        time_t now = time(0);
-        tm *newDate = localtime(&now);
-        int beginTitle;
-        int endTitle;
-        int IDLoc;
-        int dateLoc;
-        int month;
-        int day;
-        std::ifstream instream;
-        std::string fileContents;
-        std::ofstream outstream;
-        std::string entry;
-        bool found = false;
-
-        if (userID[0] != '1') {
-                std::cout << "Please enter the Patron's User ID: ";
-                std::cin >> userID;
-        };
-        instream.open("history.txt");
-        if (instream.fail()) {
-                std::cout << "Oh no...history.txt failed to open";
-                return;
-        };
-        std::getline(instream, fileContents);
-        instream.close();
-
-        IDLoc = fileContents.find(userID);
-
-
-	return;
-};
-
 void User::checkHistory(std::string userID) {
    std::ifstream instream;
    std::ostringstream convert;
@@ -504,5 +436,164 @@ void User::checkHistory(std::string userID) {
       resultCounter++;
    };
    std::cout << output;
+   return;
+};
+
+void User::updateItemStatus(std::string title, std::string newStatus) {
+   int beginTitle;
+   int IDLoc;
+   int endPipe;
+   std::string entry;
+   std::string fileContents;
+   std::ifstream instream;
+   std::ofstream outstream;
+   
+   instream.open("items.txt");
+   if (instream.fail()) {
+      std::cout << "Damn it items.txt..\n";
+      return;
+   };
+   std::getline(instream, fileContents);
+   instream.close();
+            
+   beginTitle = fileContents.find(title);
+   IDLoc = fileContents.find(":", beginTitle + title.length() + 1);
+   endPipe = fileContents.find("|", IDLoc);
+   entry = fileContents.substr(IDLoc + 1, endPipe - IDLoc - 1);
+   
+   outstream.open("items.txt");
+   if (outstream.fail()) {
+      std::cout << "noooo items.txt\n";
+      return;
+   };
+   outstream << fileContents.substr(0, IDLoc + 1) << newStatus << fileContents.substr(endPipe);
+   outstream.close();
+   //std::cout << fileContents.substr(0, IDLoc + 1) << "00000000" << fileContents.substr(endPipe) << "\n";
+   return;          
+};
+
+void User::checkOut(std::string userID, std::string itemInfo) {
+   std::string date;
+   time_t now = time(0);
+   tm *newDate = localtime(&now);
+   int beginTitle;
+   int endTitle;
+   int IDLoc;
+   int dateLoc;
+   int month;
+   int day;
+   std::ifstream instream;
+   std::string fileContents;
+   std::ofstream outstream;
+   std::string entry;
+   bool found = false;
+
+   if (userID[0] != '1') {
+      std::cout << "Please enter the Patron's User ID: ";
+      std::cin >> userID;
+   };
+   instream.open("history.txt");
+   if (instream.fail()) {
+      std::cout << "Oh no...history.txt failed to open";
+      return;
+   };
+   std::getline(instream, fileContents);
+   instream.close();
+
+   // std::cout <<fileContents << userID << ":" << itemInfo << ":" 
+      //        << 2 + newDate->tm_mon << "/" << newDate->tm_mday << "|";
+   outstream.open("history.txt");
+   outstream << fileContents << userID << ":" << itemInfo << ":" 
+             << 2 + newDate->tm_mon << "/" << newDate->tm_mday << "|";
+   outstream.close();
+   updateItemStatus(itemInfo, userID);
+   //IDLoc = fileContents.find(userID);
+
+   return;
+}
+
+void User::checkIn(std::string userID, std::string itemInfo) {
+   std::string date;
+   time_t now = time(0);
+   tm *newDate = localtime(&now);
+   int beginPipe;
+   int endPipe;
+   int beginTitle;
+   int endTitle;
+   int IDLoc;
+   int dateLoc;
+   int month;
+   int day;
+   std::ifstream instream;
+   std::string fileContents;
+   std::ofstream outstream;
+   std::string entry;
+   std::string checkID;
+   bool found = false;
+
+   if (userID[0] != '1') {
+      std::cout << "Please enter the Patron's User ID: ";
+      std::cin >> userID;
+   };
+   instream.open("history.txt");
+   if (instream.fail()) {
+      std::cout << "Oh no...history.txt failed to open";
+      return;
+   };
+   std::getline(instream, fileContents);
+   instream.close();
+
+   IDLoc = fileContents.find(userID);
+   if (IDLoc > 0 && fileContents.substr(IDLoc, 8) == userID) {
+      beginTitle = fileContents.find(":", IDLoc);
+      endTitle = fileContents.find(":", beginTitle + 1);
+      entry = fileContents.substr(beginTitle + 1, endTitle - beginTitle - 1);
+      
+      while (!found) {
+         if (entry == itemInfo) {
+            std::cout << "found it! checking in...\n";
+            date = fileContents.substr(endTitle + 1, 5);   
+            std::istringstream (date.substr(0,2)) >> month;
+            std::istringstream (date.substr(3, 2)) >> day;
+            
+            if (((1 + newDate->tm_mon) > month) || (newDate->tm_mday > day)) {
+               //charge fee
+                               
+            } 
+            outstream.open("history.txt");
+            if (outstream.fail()) {
+               std::cout << "Uh oh. it didn't open";
+               return;
+            }; 
+            beginPipe = fileContents.rfind("|", beginTitle);
+            endPipe = fileContents.find("|", beginTitle);
+            if (beginPipe == 0) {
+               outstream << fileContents.substr(endPipe);
+            }
+            else {
+               outstream << fileContents.substr(0, beginPipe) << fileContents.substr(endPipe);
+            }
+            outstream.close();
+            updateItemStatus(itemInfo, "00000000");
+            found = true;
+         }
+         else {
+            IDLoc = fileContents.find(userID, endTitle);
+            if (IDLoc > 0) {
+               beginTitle = fileContents.find(":", IDLoc);
+               endTitle = fileContents.find(":", beginTitle + 1);
+               entry = fileContents.substr(beginTitle + 1, endTitle - beginTitle - 1);
+               std::cout << "looking..." << "\n";
+            }
+            else {
+               std::cout << "could not find the item related to the user\n";
+               found = true;
+            };
+         }
+      };
+   };
+
+
+
    return;
 };

@@ -27,6 +27,7 @@ class User {
 		void renew(std::string userID, std::string itemInfo);
 		void checkOut(std::string userID, std::string itemInfo);
 		void checkIn(std::string userID, std::string itemInfo);
+		void updateItemStatus(std::string title, std::string newStatus);
 };
 
 #endif
